@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RF AI Agent Hub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg-base: #090d16;
+    --bg-panel: #111726;
+    --bg-surface: #1e293b;
+    --bg-surface-hover: #334155;
+    
+    --border-color: rgba(255, 255, 255, 0.06);
+    --border-color-hover: rgba(255, 255, 255, 0.12);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    
+    --accent-blue: #3b82f6;
+    --accent-blue-hover: #2563eb;
+    --accent-blue-glow: rgba(59, 130, 246, 0.25);
+    
+    --accent-green: #10b981;
+    --accent-green-hover: #059669;
+    --accent-green-bg: rgba(16, 185, 129, 0.08);
+    --accent-green-border: rgba(16, 185, 129, 0.15);
+    
+    --accent-orange: #f59e0b;
+    --accent-orange-bg: rgba(245, 158, 11, 0.08);
+    --accent-orange-border: rgba(245, 158, 11, 0.15);
+    
+    --accent-purple: #818cf8;
+    --accent-teal: #2dd4bf;
+    
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    --font-heading: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Scrollbars ── */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    border: 1.5px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Specific scrollbar styling for chat messages */
+  .chat-messages::-webkit-scrollbar {
+    width: 8px;
+  }
+  .chat-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.01);
+  }
+  .chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 99px;
+  }
+  .chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Specific scrollbar styling for result card rows */
+  .result-rows::-webkit-scrollbar {
+    width: 6px;
+  }
+  .result-rows::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .result-rows::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 99px;
+  }
+  .result-rows::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  /* ── App Shell ── */
+  .app-shell {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .app-header {
+    background: rgba(17, 23, 38, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 24px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .app-logo { display: flex; align-items: center; gap: 12px; }
+  .app-logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(79, 70, 229, 0.15));
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+  }
+  .app-logo-text  {
+    font-family: var(--font-heading);
+    font-size: 17px; font-weight: 800;
+    background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -.5px;
+  }
+  .app-logo-sub   {
+    font-family: var(--font-heading);
+    font-size: 9px; font-weight: 700; color: var(--accent-blue);
+    margin-top: 1px; letter-spacing: 1px;
+    opacity: 0.85;
+  }
+  .app-header-right { display: flex; align-items: center; gap: 14px; }
+  .llm-badge {
+    font-family: var(--font-heading);
+    font-size: 11px; font-weight: 600;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid var(--border-color);
+  }
+  .app-user {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), #4f46e5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: white; cursor: pointer;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: transform 0.2s;
+  }
+  .app-user:hover { transform: scale(1.05); }
+
+  /* ── Main body ── */
+  .app-body {
+    height: calc(100vh - 60px);
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── CHAT PANEL ── */
+  .chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-base);
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .chat-subheader {
+    background: rgba(17, 23, 38, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  .chat-subheader-icon {
+    width: 26px; height: 26px;
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--accent-blue);
+  }
+  .chat-subheader-text { font-size: 12.5px; color: var(--text-secondary); }
+  .chat-subheader-text strong { color: var(--text-primary); font-weight: 600; }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+  }
+
+  /* welcome */
+  .chat-welcome {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 48px 32px; text-align: center; gap: 16px;
+    background: rgba(17, 23, 38, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    max-width: 580px;
+    margin: 40px auto;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp .4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .chat-welcome-icon {
+    width: 68px; height: 68px;
+    background: linear-gradient(135deg, var(--accent-blue), #4f46e5);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.25);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .chat-welcome h2 {
+    font-family: var(--font-heading);
+    font-size: 20px; font-weight: 800; color: var(--text-primary);
+    background: linear-gradient(to right, #ffffff, #cbd5e1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .chat-welcome p {
+    font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; max-width: 440px;
+  }
+  .chat-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 8px; }
+  .chat-chip {
+    font-family: var(--font-body);
+    font-size: 12px; color: #93c5fd;
+    background: rgba(59, 130, 246, 0.06);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: 20px; padding: 6px 14px;
+    cursor: pointer; transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .chat-chip:hover {
+    background: var(--accent-blue); border-color: var(--accent-blue);
+    color: white; transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  /* bubbles */
+  .msg-row { display: flex; gap: 12px; align-items: flex-start; max-width: 85%; }
+  .msg-row.user { flex-direction: row-reverse; align-self: flex-end; }
+  .msg-row.ai { align-self: flex-start; }
+
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .msg-avatar.ai { background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; }
+  .msg-avatar.user { background: var(--accent-blue); color: white; }
+
+  .msg-bubble {
+    padding: 12px 16px;
+    border-radius: 16px; font-size: 13.5px; line-height: 1.65;
+    word-break: break-all;
+    box-shadow: var(--shadow-md);
+  }
+  .msg-bubble.user {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white;
+    border-bottom-right-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .msg-bubble.ai {
+    background: rgba(17, 23, 38, 0.5);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .msg-bubble.ai p + p { margin-top: 8px; }
+  .msg-bubble.ai ul { margin: 8px 0 0 20px; }
+  .msg-bubble.ai li { margin-bottom: 4px; }
+  .msg-bubble.ai strong { color: #60a5fa; font-weight: 600; }
+  .msg-bubble.ai code {
+    background: rgba(255,255,255,0.06); border-radius: 4px;
+    padding: 2px 6px; font-family: var(--font-mono); font-size: 12px;
+    color: #fb923c; border: 1px solid rgba(255,255,255,0.03);
+  }
+
+  /* routing badge */
+  .routing-badge {
+    margin: 4px 44px; padding: 6px 12px; border-radius: 8px;
+    font-size: 12px; font-style: italic; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 8px;
+    align-self: flex-start;
+    animation: fadeIn .3s ease;
+  }
+  .routing-badge.nrca    { background: rgba(79, 70, 229, 0.08); color: var(--accent-purple); border: 1px solid rgba(79, 70, 229, 0.15); }
+  .routing-badge.combo   { background: rgba(13, 148, 136, 0.08); color: var(--accent-teal); border: 1px solid rgba(13, 148, 136, 0.15); }
+  .routing-badge.feature { background: rgba(245, 158, 11, 0.08); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.15); }
+  .routing-badge.general { background: rgba(255, 255, 255, 0.03); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+  /* typing */
+  .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 6px 4px; }
+  .typing-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-blue);
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: .2s; background: var(--text-muted); }
+  .typing-dot:nth-child(3) { animation-delay: .4s; background: rgba(255, 255, 255, 0.1); }
+
+  /* streaming bubble */
+  .streaming-cursor::after {
+    content: '▍'; animation: blink .7s infinite; color: var(--accent-blue);
+    font-size: 14px; font-weight: bold;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* input bar */
+  .chat-input-bar {
+    background: rgba(9, 13, 22, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-color);
+    padding: 16px 24px;
+    display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
+  }
+  .chat-input {
+    flex: 1; resize: none; border: 1px solid var(--border-color);
+    border-radius: var(--radius-md); padding: 12px 16px;
+    font-size: 13.5px; font-family: var(--font-body); color: var(--text-primary);
+    line-height: 1.5; outline: none; min-height: 44px; max-height: 120px;
+    background: rgba(255,255,255,0.03); transition: border-color .2s, background-color .2s;
+  }
+  .chat-input:focus { border-color: rgba(59, 130, 246, 0.5); background: rgba(255,255,255,0.05); }
+  .chat-input::placeholder { color: var(--text-muted); }
+  
+  .send-btn {
+    width: 44px; height: 44px; background: var(--accent-blue); color: white;
+    border: none; border-radius: var(--radius-md); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: all .2s cubic-bezier(0.16, 1, 0.3, 1); flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  }
+  .send-btn:hover { background: var(--accent-blue-hover); transform: scale(1.03); }
+  .send-btn:disabled {
+    background: rgba(255, 255, 255, 0.02); color: var(--text-muted);
+    border: 1px solid var(--border-color); cursor: not-allowed; box-shadow: none;
+  }
+
+  /* nrca result card */
+  .result-card {
+    background: rgba(17, 23, 38, 0.65); border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    overflow: hidden; box-shadow: var(--shadow-lg);
+    max-width: 85%; margin-left: 44px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    animation: slideUp .3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .result-card-header {
+    padding: 10px 16px; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(16, 185, 129, 0.05); color: #a7f3d0;
+    font-family: var(--font-heading);
+  }
+  .result-rows {
+    padding: 6px 0;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .result-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 16px; gap: 8px; font-size: 12.5px; font-family: var(--font-mono);
+    cursor: pointer; transition: background .15s;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row:hover { background: rgba(255, 255, 255, 0.03); }
+  .result-row-bw { color: #34d399; flex: 1; }
+  .result-tag {
+    font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+    font-family: var(--font-heading); white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+  .result-footer {
+    padding: 8px 16px; font-size: 11px; color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex; align-items: center; justify-content: space-between;
+    font-style: italic;
+  }
+  .copy-btn {
+    font-size: 11px; color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+    border-radius: 6px; padding: 4px 10px; cursor: pointer;
+    font-family: var(--font-heading); transition: all .15s; font-style: normal;
+  }
+  .copy-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255,255,255,0.2); }
+
+  /* error */
+  .error-msg {
+    font-size: 12.5px; color: #fca5a5; background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px;
+    padding: 10px 16px; margin-left: 44px;
+    animation: fadeIn .3s ease;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 290px; background: var(--bg-panel);
+    display: flex; flex-direction: column; flex-shrink: 0;
+    border-right: 1px solid var(--border-color);
+  }
+  .sidebar-header {
+    padding: 16px; border-bottom: 1px solid var(--border-color);
+    background: rgba(17, 23, 38, 0.2); flex-shrink: 0;
+  }
+  .sidebar-title { font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .sidebar-hint  { font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
+  
+  .sidebar-cards {
+    flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;
+  }
+
+  /* App Card */
+  .app-card {
+    background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color);
+    border-radius: var(--radius-md); overflow: hidden;
+    box-shadow: var(--shadow-sm); transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer;
+  }
+  .app-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+  }
+  .app-card.active {
+    border-color: var(--accent-green);
+    background: rgba(16, 185, 129, 0.02);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.08);
+  }
+
+  .app-card-topbar { height: 3px; opacity: 0.8; }
+  .app-card-topbar.rf    { background: var(--accent-blue); }
+  .app-card-topbar.combo { background: var(--accent-teal); }
+  .app-card-topbar.nrca  { background: var(--accent-green); }
+
+  .app-card-body { padding: 12px 14px 8px; }
+  .app-card-row1 { display: flex; align-items: flex-start; gap: 10px; }
+  
+  .app-card-icon {
+    width: 38px; height: 38px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+  .app-card-icon.rf    { background: rgba(59, 130, 246, 0.08); color: var(--accent-blue); }
+  .app-card-icon.combo { background: rgba(45, 212, 191, 0.08); color: var(--accent-teal); }
+  .app-card-icon.nrca  { background: rgba(16, 185, 129, 0.08); color: var(--accent-green); }
+
+  .app-card-name { font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.35; }
+  .app-card-desc { font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.45; }
+
+  .app-card-status {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 9.5px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; margin-top: 8px;
+    font-family: var(--font-heading);
+  }
+  .app-card-status.live { background: rgba(16, 185, 129, 0.08); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.15); }
+  .app-card-status.soon { background: rgba(245, 158, 11, 0.08); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.15); }
+
+  .app-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .app-card-tag {
+    font-size: 9.5px; padding: 1px 6px; border-radius: 4px; font-weight: 500;
+  }
+  .app-card-tag.rf    { background: rgba(59, 130, 246, 0.04);  color: #93c5fd;  border: 1px solid rgba(59, 130, 246, 0.1); }
+  .app-card-tag.combo { background: rgba(45, 212, 191, 0.04);  color: #99f6e4;  border: 1px solid rgba(45, 212, 191, 0.1); }
+  .app-card-tag.nrca  { background: rgba(16, 185, 129, 0.04); color: #a7f3d0;  border: 1px solid rgba(16, 185, 129, 0.1); }
+
+  .app-card-footer {
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 8px 14px 10px; border-top: 1px solid var(--border-color); margin-top: 8px; gap: 6px;
+  }
+  .app-card-btn {
+    font-family: var(--font-heading);
+    font-size: 11px; font-weight: 600; padding: 5px 12px;
+    border-radius: 6px; cursor: pointer; border: none;
+    transition: all .2s;
+  }
+  .app-card-btn.green {
+    background: var(--accent-green); color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  }
+  .app-card-btn.green:hover { background: var(--accent-green-hover); transform: translateY(-1px); }
+  .app-card-btn.disabled {
+    background: rgba(255,255,255,0.03); color: var(--text-muted);
+    border: 1px solid var(--border-color); cursor: not-allowed;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal-window {
+    width: 92vw; max-width: 1100px; height: 86vh;
+    background: var(--bg-panel); border-radius: var(--radius-lg); overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border-color);
+    transform: scale(.96); transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .modal-overlay.open .modal-window { transform: scale(1); }
+
+  .modal-header {
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .modal-header-left { display: flex; align-items: center; gap: 12px; }
+  .modal-header-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .modal-header-title { font-family: var(--font-heading); font-size: 14.5px; font-weight: 700; color: white; }
+  .modal-header-sub   { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: var(--text-secondary);
+    font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all .15s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.1); color: white; }
+  .modal-iframe-wrap { flex: 1; overflow: hidden; background: #ffffff; }
+  .modal-iframe-wrap iframe { width: 100%; height: 100%; border: none; }
+
+  .coming-soon {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    background: rgba(9, 13, 22, 0.4); text-align: center; padding: 40px;
+  }
+  .coming-soon-icon { font-size: 48px; }
+  .coming-soon h3 { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  .coming-soon p  { font-size: 13px; color: var(--text-secondary); line-height: 1.7; max-width: 380px; }
+  .coming-soon-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245, 158, 11, 0.08); color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.15); border-radius: 20px; padding: 5px 14px;
+    font-size: 11.5px; font-weight: 700; font-family: var(--font-heading);
+  }
+
+  /* ── API Key Screen ── */
+  .apikey-overlay {
+    position: fixed; inset: 0; z-index: 2000;
+    background: #090d16;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn .3s ease;
+    overflow: hidden;
+  }
+  .apikey-overlay.hidden { display: none; }
+
+  /* Glow Orbs */
+  .apikey-glow-orb-1 {
+    position: absolute; width: 450px; height: 450px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 70%);
+    top: -10%; left: -5%; filter: blur(60px); pointer-events: none;
+  }
+  .apikey-glow-orb-2 {
+    position: absolute; width: 450px; height: 450px;
+    background: radial-gradient(circle, rgba(79, 70, 229, 0.12) 0%, rgba(79, 70, 229, 0) 70%);
+    bottom: -10%; right: -5%; filter: blur(60px); pointer-events: none;
+  }
+
+  .apikey-card {
+    background: rgba(17, 23, 38, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    width: 100%; max-width: 450px;
+    padding: 40px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    animation: slideUp .4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
+  }
+  .apikey-logo {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+  }
+  .apikey-logo-icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent-blue), #4f46e5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .apikey-logo-text  { font-family: var(--font-heading); font-size: 19px; font-weight: 850; color: white; letter-spacing: -0.3px; }
+  .apikey-logo-sub   { font-family: var(--font-heading); font-size: 10px; font-weight: 700; color: var(--accent-blue); margin-top: 3px; letter-spacing: 0.5px; }
+
+  .apikey-divider { border: none; border-top: 1px solid var(--border-color); margin-bottom: 24px; }
+
+  .apikey-label {
+    font-family: var(--font-heading); font-size: 12.5px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 8px; display: block;
+  }
+  .apikey-desc {
+    font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.65;
+  }
+  .apikey-input-wrap {
+    position: relative; display: flex; align-items: center;
+  }
+  .apikey-input {
+    width: 100%; padding: 11px 44px 11px 14px;
+    border: 1.5px solid var(--border-color); border-radius: var(--radius-md);
+    font-size: 13px; font-family: var(--font-mono); color: var(--text-primary);
+    outline: none; background: rgba(255, 255, 255, 0.03); transition: border-color .2s, background-color .2s;
+    letter-spacing: .05em;
+  }
+  .apikey-input:focus { border-color: rgba(59, 130, 246, 0.5); background: rgba(255,255,255,0.05); }
+  .apikey-input::placeholder { font-family: var(--font-body); letter-spacing: 0; color: var(--text-muted); }
+  .apikey-toggle {
+    position: absolute; right: 12px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-secondary); font-size: 15px; padding: 2px;
+    transition: color .15s;
+  }
+  .apikey-toggle:hover { color: white; }
+
+  .apikey-remember {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 12px; cursor: pointer;
+  }
+  .apikey-remember input[type=checkbox] {
+    width: 14px; height: 14px; accent-color: var(--accent-blue); cursor: pointer;
+    background: transparent; border: 1px solid var(--border-color);
+  }
+  .apikey-remember-label { font-size: 11.5px; color: var(--text-secondary); }
+
+  .apikey-submit {
+    width: 100%; margin-top: 22px; padding: 12px;
+    background: var(--accent-blue); color: white;
+    border: none; border-radius: var(--radius-md);
+    font-size: 13.5px; font-weight: 700; font-family: var(--font-heading);
+    cursor: pointer; transition: all .2s;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  }
+  .apikey-submit:hover:not(:disabled) { background: var(--accent-blue-hover); transform: translateY(-1px); }
+  .apikey-submit:disabled { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); color: var(--text-muted); cursor: not-allowed; opacity: 0.7; box-shadow: none; }
+
+  .apikey-error {
+    margin-top: 12px; padding: 10px 14px;
+    background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px; font-size: 12px; color: #fca5a5; display: none;
+    animation: fadeIn .2s ease;
+  }
+  .apikey-error.show { display: block; }
+
+  .apikey-footer {
+    margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-color);
+    font-size: 11px; color: var(--text-muted); line-height: 1.7; text-align: center;
+  }
+  .apikey-footer a { color: var(--accent-blue); text-decoration: none; }
+  .apikey-footer a:hover { text-decoration: underline; }
+
+  /* API 키 상태 표시 (헤더) */
+  .apikey-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-secondary);
+    cursor: pointer; padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: rgba(255,255,255,0.02);
+    border-radius: 20px; transition: all .2s;
+  }
+  .apikey-status:hover { background: rgba(255,255,255,0.06); color: white; border-color: rgba(255,255,255,0.15); }
+  .apikey-status-dot {
+    width: 6.5px; height: 6.5px; border-radius: 50%; background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+  @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes bounce  { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+</style>
+</head>
+<body>
+
+<!-- ── API Key Screen ── -->
+<div class="apikey-overlay" id="apikeyOverlay">
+  <div class="apikey-glow-orb-1"></div>
+  <div class="apikey-glow-orb-2"></div>
+  <div class="apikey-card">
+    <div class="apikey-logo">
+      <div class="apikey-logo-icon">🤖</div>
+      <div>
+        <div class="apikey-logo-text">RF AI Agent Hub</div>
+        <div class="apikey-logo-sub">POWERED BY RF AI ORCHESTRATOR</div>
+      </div>
+    </div>
+    <hr class="apikey-divider">
+    <label class="apikey-label">Anthropic API Key</label>
+    <p class="apikey-desc">
+      Claude 기반 RF AI Orchestrator를 사용하려면 Anthropic API 키가 필요합니다.<br>
+      키는 이 기기의 브라우저에만 저장되며 외부로 전송되지 않습니다.
+    </p>
+    <div class="apikey-input-wrap">
+      <input
+        class="apikey-input" id="apikeyInput" type="password"
+        placeholder="sk-ant-api03-..."
+        onkeydown="if(event.key==='Enter') submitApiKey()"
+        oninput="onKeyInput()" onpaste="setTimeout(onKeyInput,10)" onchange="onKeyInput()" onkeyup="onKeyInput()"
+      >
+      <button class="apikey-toggle" id="apikeyToggle" onclick="toggleKeyVisible()" tabindex="-1">👁</button>
+    </div>
+    <label class="apikey-remember">
+      <input type="checkbox" id="rememberKey">
+      <span class="apikey-remember-label">이 브라우저에 저장 (localStorage · 탭 닫아도 유지)</span>
+    </label>
+    <div class="apikey-error" id="apikeyError"></div>
+    <button class="apikey-submit" id="apikeySubmit" onclick="submitApiKey()" disabled>
+      시작하기 →
+    </button>
+    <div class="apikey-footer">
+      API 키는 <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>에서 발급받을 수 있습니다.<br>
+      키는 브라우저 메모리(또는 localStorage)에만 저장되며 서버로 전송되지 않습니다.
+    </div>
+  </div>
+</div>
+
+<!-- ── Hidden iframe: SA NR CA BW Analyzer (postMessage 통신용) ── -->
+<iframe
+  id="nrcaWorker"
+  src="https://junstime.github.io/NRCA_MAX_BW_Analyzer/"
+  style="display:none; width:0; height:0; border:none; position:absolute; left:-9999px;"
+></iframe>
+
+<div class="app-shell">
+  <header class="app-header">
+    <div class="app-logo">
+      <div class="app-logo-icon">🤖</div>
+      <div>
+        <div class="app-logo-text">RF AI Agent Hub</div>
+        <div class="app-logo-sub">POWERED BY RF AI ORCHESTRATOR</div>
+      </div>
+    </div>
+    <div class="app-header-right">
+      <div class="apikey-status" onclick="resetApiKey()" title="클릭하여 API 키 변경">
+        <div class="apikey-status-dot"></div>
+        <span>API 키 연결됨</span>
+      </div>
+      <span class="llm-badge">Claude Sonnet · RF AI Orchestrator</span>
+      <div class="app-user">J</div>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <!-- ── Sidebar (Moved to Left) ── -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">🗂️ Agent 앱카드</div>
+        <div class="sidebar-hint">직접 선택하여 Agent를 바로 사용할 수 있습니다</div>
+      </div>
+      <div class="sidebar-cards">
+
+        <div class="app-card" onclick="openModal('feature')">
+          <div class="app-card-topbar rf"></div>
+          <div class="app-card-body">
+            <div class="app-card-row1">
+              <div class="app-card-icon rf">🔍</div>
+              <div>
+                <div class="app-card-name">RF Feature Guide Search</div>
+                <div class="app-card-desc">모델별·권역별 RF Feature 정보 기반 질의응답</div>
+              </div>
+            </div>
+            <span class="app-card-status soon">⏳ 개발 예정</span>
+            <div class="app-card-tags">
+              <span class="app-card-tag rf">PPT 기반</span>
+              <span class="app-card-tag rf">RAG</span>
+              <span class="app-card-tag rf">모델/권역 필터</span>
+            </div>
+          </div>
+          <div class="app-card-footer">
+            <button class="app-card-btn disabled" onclick="event.stopPropagation()">준비 중</button>
+          </div>
+        </div>
+
+        <div class="app-card" onclick="openModal('combo')">
+          <div class="app-card-topbar combo"></div>
+          <div class="app-card-body">
+            <div class="app-card-row1">
+              <div class="app-card-icon combo">📊</div>
+              <div>
+                <div class="app-card-name">MNO Combo Review</div>
+                <div class="app-card-desc">LTE CA / ENDC / NR CA 지원 여부 및 Feasibility 검토</div>
+              </div>
+            </div>
+            <span class="app-card-status soon">⏳ 개발 예정</span>
+            <div class="app-card-tags">
+              <span class="app-card-tag combo">Excel 기반</span>
+              <span class="app-card-tag combo">사업자별</span>
+              <span class="app-card-tag combo">Feasibility</span>
+            </div>
+          </div>
+          <div class="app-card-footer">
+            <button class="app-card-btn disabled" onclick="event.stopPropagation()">준비 중</button>
+          </div>
+        </div>
+
+        <div class="app-card active" onclick="openModal('nrca')">
+          <div class="app-card-topbar nrca"></div>
+          <div class="app-card-body">
+            <div class="app-card-row1">
+              <div class="app-card-icon nrca">⚙️</div>
+              <div>
+                <div class="app-card-name">SA NR CA Max BW Analysis</div>
+                <div class="app-card-desc">3GPP 기반 단말+칩셋 제한 적용 NR CA Max BW 자동 계산</div>
+              </div>
+            </div>
+            <span class="app-card-status live">✅ 운영 중</span>
+            <div class="app-card-tags">
+              <span class="app-card-tag nrca">3,250 조합</span>
+              <span class="app-card-tag nrca">오프라인</span>
+              <span class="app-card-tag nrca">즉시 실행</span>
+            </div>
+          </div>
+          <div class="app-card-footer">
+            <button class="app-card-btn green" onclick="event.stopPropagation();openModal('nrca')">바로 사용 →</button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── Chat Panel ── -->
+    <div class="chat-panel">
+      <div class="chat-subheader">
+        <div class="chat-subheader-icon">⚡</div>
+        <span class="chat-subheader-text">
+          <strong>RF AI Orchestrator</strong> — Claude 기반 · 자연어 질의를 분석하여 적합한 Agent로 자동 라우팅
+        </span>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-welcome" id="chatWelcome">
+          <div class="chat-welcome-icon">🤖</div>
+          <h2>RF AI Agent Hub에 오신 걸 환영합니다</h2>
+          <p>RF 개발에 필요한 기술 질문을 자연어로 입력하세요.<br>
+          Claude 기반 RF AI Orchestrator가 질의를 분석하여 최적의 Agent로 연결합니다.</p>
+          <div class="chat-chips">
+            <span class="chat-chip" onclick="sendChip(this)">n1+n3+n78C Max BW 계산해줘</span>
+            <span class="chat-chip" onclick="sendChip(this)">n41+n78 2CA 가능한 BW 조합 알려줘</span>
+            <span class="chat-chip" onclick="sendChip(this)">n1+n3+n28 3CA BCS2 결과 보여줘</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-bar">
+        <textarea
+          class="chat-input" id="chatInput" rows="1"
+          placeholder="RF 관련 질문을 입력하세요... (예: n1+n3+n78C Max BW 계산해줘)"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">&#9658;</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="modal-feature" onclick="closeOutside(event,'feature')">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">🔍</div>
+        <div>
+          <div class="modal-header-title">RF Feature Guide Search Agent</div>
+          <div class="modal-header-sub">모델별·권역별 RF Feature 정보 기반 RAG 질의응답</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('feature')">✕</button>
+    </div>
+    <div class="coming-soon">
+      <div class="coming-soon-icon">🔍</div>
+      <h3>RF Feature Guide Search Agent</h3>
+      <p>모델별·권역별 RF Feature Guide(PPT)를 RAG 기반으로 검색하여 자연어 질문에 즉시 답변하는 Agent입니다.<br><br>
+      PPT 데이터 수집·전처리 및 Vector DB 구축 완료 후 연결될 예정입니다.</p>
+      <span class="coming-soon-badge">⏳ 개발 예정</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-combo" onclick="closeOutside(event,'combo')">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">📊</div>
+        <div>
+          <div class="modal-header-title">MNO Combo Review Agent</div>
+          <div class="modal-header-sub">LTE CA / ENDC / NR CA 지원 여부 및 Feasibility 검토</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('combo')">✕</button>
+    </div>
+    <div class="coming-soon">
+      <div class="coming-soon-icon">📊</div>
+      <h3>MNO Combo Review Agent</h3>
+      <p>사업자에서 문의하는 LTE CA / ENDC / NR CA 지원 여부를 모델별로 자동 확인하고,
+      미지원 시 Feasibility 검토까지 수행하는 Agent입니다.<br><br>
+      Combo Excel·사업자 권역 파일·칩셋 파일 연동 후 제공 예정입니다.</p>
+      <span class="coming-soon-badge">⏳ 개발 예정</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-nrca" onclick="closeOutside(event,'nrca')">
+  <div class="modal-window">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">⚙️</div>
+        <div>
+          <div class="modal-header-title">SA NR CA Max BW Analysis</div>
+          <div class="modal-header-sub">3GPP TS 38.101-1 V19.5.0 · 완전 오프라인 · 3,250개 조합</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('nrca')">✕</button>
+    </div>
+    <div class="modal-iframe-wrap">
+      <iframe src="https://junstime.github.io/NRCA_MAX_BW_Analyzer/" loading="lazy"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── API Key 관리 ─────────────────────────────────────────────
+let ANTHROPIC_API_KEY = '';
+
+function onKeyInput() {
+  const val = document.getElementById('apikeyInput').value.trim();
+  const btn = document.getElementById('apikeySubmit');
+  btn.disabled = val.length < 20;
+  if (val.length >= 20) btn.style.opacity = '1';
+  else btn.style.opacity = '';
+  document.getElementById('apikeyError').classList.remove('show');
+}
+
+function toggleKeyVisible() {
+  const input = document.getElementById('apikeyInput');
+  const btn   = document.getElementById('apikeyToggle');
+  if (input.type === 'password') { input.type = 'text';     btn.textContent = '🙈'; }
+  else                           { input.type = 'password'; btn.textContent = '👁'; }
+}
+
+async function submitApiKey() {
+  const key = document.getElementById('apikeyInput').value.trim();
+  if (!key || key.length < 20) {
+    showKeyError('API 키를 입력해 주세요.');
+    return;
+  }
+  if (!key.startsWith('sk-ant-')) {
+    showKeyError('올바른 Anthropic API 키 형식이 아닙니다. (sk-ant- 로 시작해야 합니다)');
+    return;
+  }
+
+  const btn = document.getElementById('apikeySubmit');
+  btn.disabled = true;
+  btn.textContent = '키 확인 중...';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 10,
+        messages: [{ role: 'user', content: 'hi' }]
+      })
+    });
+
+    // 401 = 잘못된 키, 나머지(200, 429 등)는 키 유효
+    if (res.status === 401) {
+      showKeyError('유효하지 않은 API 키입니다. 키를 다시 확인해 주세요.');
+      btn.disabled = false; btn.textContent = '시작하기 →';
+      return;
+    }
+
+    // 키 저장
+    ANTHROPIC_API_KEY = key;
+    if (document.getElementById('rememberKey').checked) {
+      localStorage.setItem('rf_hub_apikey', key);
+    } else {
+      localStorage.removeItem('rf_hub_apikey');
+    }
+
+    // 화면 전환
+    document.getElementById('apikeyOverlay').classList.add('hidden');
+
+  } catch (e) {
+    showKeyError('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.');
+    btn.disabled = false; btn.textContent = '시작하기 →';
+  }
+}
+
+function showKeyError(msg) {
+  const el = document.getElementById('apikeyError');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('show');
+}
+
+function resetApiKey() {
+  if (!confirm('API 키를 변경하시겠습니까?')) return;
+  ANTHROPIC_API_KEY = '';
+  localStorage.removeItem('rf_hub_apikey');
+  conversationHistory = [];
+  const input = document.getElementById('apikeyInput');
+  input.value = '';
+  input.type = 'password';
+  document.getElementById('apikeyToggle').textContent = '👁';
+  document.getElementById('apikeySubmit').disabled = true;
+  document.getElementById('apikeySubmit').textContent = '시작하기 →';
+  document.getElementById('apikeyError').classList.remove('show');
+  document.getElementById('apikeyOverlay').classList.remove('hidden');
+  // 채팅 초기화
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML = `
+    <div class="chat-welcome" id="chatWelcome">
+      <div class="chat-welcome-icon">🤖</div>
+      <h2>RF AI Agent Hub에 오신 걸 환영합니다</h2>
+      <p>RF 개발에 필요한 기술 질문을 자연어로 입력하세요.<br>
+      Claude 기반 RF AI Orchestrator가 질의를 분석하여 최적의 Agent로 연결합니다.</p>
+      <div class="chat-chips">
+        <span class="chat-chip" onclick="sendChip(this)">n1+n3+n78C Max BW 계산해줘</span>
+        <span class="chat-chip" onclick="sendChip(this)">n41+n78 2CA 가능한 BW 조합 알려줘</span>
+        <span class="chat-chip" onclick="sendChip(this)">n1+n3+n28 3CA BCS2 결과 보여줘</span>
+      </div>
+    </div>`;
+}
+
+// 저장된 키 자동 로드
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('rf_hub_apikey');
+  if (saved && saved.startsWith('sk-ant-')) {
+    ANTHROPIC_API_KEY = saved;
+    const input = document.getElementById('apikeyInput');
+    input.value = saved;
+    document.getElementById('rememberKey').checked = true;
+    // 버튼 강제 활성화
+    document.getElementById('apikeySubmit').disabled = false;
+    // 저장된 키는 검증 완료 상태 → 바로 오버레이 숨김
+    document.getElementById('apikeyOverlay').classList.add('hidden');
+  }
+  // 입력창에 값이 있으면 항상 버튼 활성화 (붙여넣기 등으로 미리 채워진 경우)
+  const inputVal = document.getElementById('apikeyInput').value.trim();
+  if (inputVal.length >= 20) {
+    document.getElementById('apikeySubmit').disabled = false;
+  }
+});
+
+// ── postMessage: SA NR CA BW Analyzer 연동 ─────────────────
+let nrcaWorkerReady = false;
+let nrcaPendingCombo = null;
+let nrcaResolve = null;
+const NRCA_TIMEOUT = 15000; // 15초 타임아웃
+
+// iframe 로드 완료 감지
+document.getElementById('nrcaWorker').addEventListener('load', () => {
+  nrcaWorkerReady = true;
+  console.log('[NRCA] ✅ Analyzer iframe 로드 완료');
+});
+
+// Analyzer로부터 결과 수신
+window.addEventListener('message', (e) => {
+  if (!e.data || e.data.type !== 'ANALYZE_RESULT') return;
+  console.log('[NRCA] ✅ ANALYZE_RESULT 수신:', e.data.count, '개 결과');
+  if (nrcaResolve) {
+    nrcaResolve(e.data);
+    nrcaResolve = null;
+  }
+});
+
+function sendToNRCA(combo) {
+  const iframe = document.getElementById('nrcaWorker');
+  console.log('[NRCA] postMessage ANALYZE_REQUEST:', combo);
+  iframe.contentWindow.postMessage({ type: 'ANALYZE_REQUEST', combo }, '*');
+}
+
+// Analyzer에 조합 전달하고 결과를 Promise로 반환
+function requestNRCAAnalysis(combo) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      nrcaResolve = null;
+      clearInterval(retryTimer);
+      reject(new Error('분석 시간 초과 (30초). Analyzer 응답이 없습니다.'));
+    }, 30000);
+
+    nrcaResolve = (data) => {
+      clearTimeout(timer);
+      clearInterval(retryTimer);
+      resolve(data);
+    };
+
+    const iframe = document.getElementById('nrcaWorker');
+
+    // load 이벤트에 의존하지 않고, 결과 받을 때까지 0.8초마다 계속 재전송
+    const trysend = () => {
+      try {
+        if (iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'ANALYZE_REQUEST', combo }, '*');
+          console.log('[NRCA] sent ANALYZE_REQUEST:', combo);
+        }
+      } catch (err) {
+        console.error('[NRCA] postMessage failed:', err);
+      }
+    };
+
+    // 즉시 1회 전송
+    trysend();
+    // 응답 올 때까지 0.8초마다 재전송 (iframe 로딩 지연 대비)
+    const retryTimer = setInterval(() => {
+      if (nrcaResolve) trysend();
+      else clearInterval(retryTimer);
+    }, 800);
+  });
+}
+
+// 결과 카드 HTML 생성
+function buildNRCACard(data) {
+  const bcsColors = { BCS0:'#3b82f6', BCS1:'#2dd4bf', BCS2:'#10b981', BCS4and5:'#f59e0b' };
+  const rows = data.results.map(r => {
+    const bg = bcsColors[r.bcs] || '#64748b';
+    const fullEsc = (r.full || (r.bw + (r.bcs ? `(${r.bcs})` : ''))).replace(/"/g,'&quot;');
+    return `
+      <div class="result-row" data-full="${fullEsc}" onclick="copyOneRow(this)">
+        <span class="result-row-bw">${escHtml(r.bw)}</span>
+        <span class="result-tag" style="background:${bg};color:white">${escHtml(r.bcs)}</span>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="result-card" style="max-width:85%;margin-left:44px">
+      <div class="result-card-header nrca">
+        <span>⚙️ SA NR CA BW Analysis — <b>${escHtml(data.combo)}</b>
+          ${data.chipset ? ` · 칩셋: ${escHtml(data.chipset)}` : ''}
+          ${data.bcsKey  ? ` · BCS: ${escHtml(data.bcsKey)}`   : ''}
+        </span>
+        <button class="copy-btn" onclick="copyAllResults(this)">📋 전체 복사</button>
+      </div>
+      <div class="result-rows" id="nrca-rows-${Date.now()}">${rows}</div>
+      <div class="result-footer">
+        <span>📄 3GPP TS 38.101-1 V19.5.0 · 총 ${data.count}개 결과</span>
+        <a href="https://junstime.github.io/NRCA_MAX_BW_Analyzer/" target="_blank"
+           style="color:var(--accent-blue);text-decoration:none;font-style:normal;font-size:11px">
+          Analyzer 열기 ↗
+        </a>
+      </div>
+    </div>`;
+}
+
+// 한 줄 클릭 복사 (BCS 포함)
+function copyOneRow(el) {
+  const full = el.getAttribute('data-full') || el.querySelector('.result-row-bw').textContent.trim();
+  navigator.clipboard.writeText(full).then(() => {
+    el.style.background = 'rgba(16, 185, 129, 0.08)';
+    setTimeout(() => el.style.background = '', 1200);
+  });
+}
+
+// 전체 복사 (BCS 포함)
+function copyAllResults(btn) {
+  const card = btn.closest('.result-card');
+  const rows = [...card.querySelectorAll('.result-row')].map(el =>
+    el.getAttribute('data-full') || el.querySelector('.result-row-bw').textContent.trim()
+  );
+  navigator.clipboard.writeText(rows.join('\n')).then(() => {
+    btn.textContent = '✅ 복사됨';
+    setTimeout(() => btn.textContent = '📋 전체 복사', 1500);
+  });
+}
+
+// ── 시스템 프롬프트 ─────────────────────────────────────────
+const SYSTEM_PROMPT = `당신은 RF AI Orchestrator입니다. 삼성 MX 스마트폰 HW 개발팀의 RF 엔지니어를 지원하는 AI Agent Hub의 핵심 AI입니다.
+
+당신이 보유한 Sub Agent 목록:
+1. SA NR CA Max BW Analysis Agent (운영 중) - 3GPP TS 38.101-1 V19.5.0 기반, NR CA 조합의 단말+칩셋 제한 적용 Max BW 계산. 이 Agent는 실제로 연결되어 있어 직접 계산 결과를 가져올 수 있습니다.
+2. MNO Combo Review Agent (개발 예정) - LTE CA / ENDC / NR CA 사업자 지원 여부 및 Feasibility 검토
+3. RF Feature Guide Search Agent (개발 예정) - 모델별·권역별 RF Feature Guide(PPT) RAG 검색
+
+응답 형식 (매우 중요):
+- 응답의 첫 줄은 반드시 아래 JSON 한 줄이어야 합니다. 코드블록(백틱)으로 감싸지 말고 순수 JSON만 첫 줄에 출력하세요.
+- JSON 첫 줄 예시: {"intent":"nrca","combo":"n1A-n3A-n78C"}
+- 그 다음 줄부터 사용자에게 보여줄 자연어 답변을 작성하세요.
+- intent 종류: "nrca" | "combo" | "feature" | "general"
+
+intent 판단 기준:
+- "nrca": NR CA BW 계산, CA 조합 분석, Max BW, BCS, 칩셋 제한, FDD/TDD 조합 관련
+  ★ 중요: 밴드 조합(n1, n3, n7, n28, n78 등)이 2개 이상 언급되고 BW/대역폭/Max/계산/확인 등의 단어가 있으면 무조건 "nrca"입니다.
+  ★ FDD 밴드만 있어도(n1+n3+n7 등) NR CA이면 "nrca"입니다. 절대 "general"로 분류하지 마세요.
+  ★ 예시: "n1+n3+n7 Max BW" → nrca / "n1A-n3A-n78C 계산" → nrca / "n41 n78 대역폭" → nrca
+- "combo": 사업자 이름(AT&T, Verizon 등)과 함께 Combo/ENDC 지원 여부를 묻는 경우
+- "feature": RF Feature Guide, 모델/권역 스펙, EIRP, TRP, TIS, OTA 인증
+- "general": 밴드 조합이 전혀 없는 일반 RF 개념 질문만 해당
+
+combo 필드 작성 (intent가 "nrca"일 때 필수):
+- 입력의 밴드들을 "nXA-nYA-nZC" 형식으로 변환 (하이픈 연결)
+- suffix 없으면 A 추가: n1 → n1A, n3 → n3A, n7 → n7A
+- 예시: "n1+n3+n7" → "n1A-n3A-n7A" / "n1+n3+n78C" → "n1A-n3A-n78C"
+- intent가 nrca인데 combo가 null이면 안 됩니다. 반드시 파싱하세요.
+
+NR CA 질문에 대한 응답:
+- JSON 이후 계산 결과가 자동으로 표시될 것임을 간단히 안내하세요 (1-2줄)
+- 긴 설명은 하지 말고, 결과가 나온 후 추가 설명이 필요하면 이야기해달라고 하세요
+
+개발 예정 Agent 관련:
+- 준비 중임을 안내하고 관련 RF 기술 지식으로 직접 답변하세요
+
+항상 한국어로 답변하세요. RF 전문 용어는 영문 그대로 사용하세요.`;
+
+// ── 대화 히스토리 ────────────────────────────────────────────
+let conversationHistory = [];
+let isLoading = false;
+
+// ── UI 헬퍼 ──────────────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function sendChip(el) {
+  document.getElementById('chatInput').value = el.textContent;
+  sendMessage();
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function appendEl(el) {
+  const c = document.getElementById('chatMessages');
+  c.appendChild(el);
+  c.scrollTop = c.scrollHeight;
+}
+function scrollBottom() {
+  const c = document.getElementById('chatMessages');
+  c.scrollTop = c.scrollHeight;
+}
+
+// ── 메시지 렌더 ───────────────────────────────────────────────
+function addUserBubble(text) {
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = `
+    <div class="msg-bubble user">${escHtml(text)}</div>
+    <div class="msg-avatar user">나</div>`;
+  appendEl(row);
+}
+
+function addRoutingBadge(intent) {
+  const map = {
+    nrca:    ['nrca',    '⚡ RF AI Orchestrator → SA NR CA BW Analysis Agent 호출'],
+    combo:   ['combo',   '⚡ RF AI Orchestrator → MNO Combo Review Agent 호출'],
+    feature: ['feature', '⚡ RF AI Orchestrator → RF Feature Guide Search Agent 호출'],
+    general: ['general', '⚡ RF AI Orchestrator → 직접 응답 (RF 기술 일반 질의)'],
+  };
+  const [cls, txt] = map[intent] || map['general'];
+  const badge = document.createElement('div');
+  badge.className = `routing-badge ${cls}`;
+  badge.innerHTML = `<span>🔀</span><span>${txt}</span>`;
+  appendEl(badge);
+  return badge;
+}
+
+// 스트림 버블(AI 답변) 앞에 라우팅 배지 삽입
+function insertRoutingBadgeBefore(streamBubble, intent) {
+  const map = {
+    nrca:    ['nrca',    '⚡ RF AI Orchestrator → SA NR CA BW Analysis Agent 호출'],
+    combo:   ['combo',   '⚡ RF AI Orchestrator → MNO Combo Review Agent 호출'],
+    feature: ['feature', '⚡ RF AI Orchestrator → RF Feature Guide Search Agent 호출'],
+    general: ['general', '⚡ RF AI Orchestrator → 직접 응답 (RF 기술 일반 질의)'],
+  };
+  const [cls, txt] = map[intent] || map['general'];
+  const badge = document.createElement('div');
+  badge.className = `routing-badge ${cls}`;
+  badge.innerHTML = `<span>🔀</span><span>${txt}</span>`;
+  // streamBubble이 속한 msg-row 앞에 삽입
+  const row = streamBubble ? streamBubble.closest('.msg-row') : null;
+  const container = document.getElementById('chatMessages');
+  if (row && row.parentNode === container) {
+    container.insertBefore(badge, row);
+  } else {
+    appendEl(badge);
+  }
+  scrollBottom();
+}
+
+function addTyping() {
+  const row = document.createElement('div');
+  row.className = 'msg-row'; row.id = 'typingRow';
+  row.innerHTML = `
+    <div class="msg-avatar ai">AI</div>
+    <div class="msg-bubble ai">
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>`;
+  appendEl(row);
+}
+function removeTyping() {
+  const el = document.getElementById('typingRow');
+  if (el) el.remove();
+}
+
+// 스트리밍 버블 생성
+function createStreamBubble() {
+  const row = document.createElement('div');
+  row.className = 'msg-row'; row.id = 'streamRow';
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ai'; avatar.textContent = 'AI';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble ai streaming-cursor'; bubble.id = 'streamBubble';
+  row.appendChild(avatar); row.appendChild(bubble);
+  appendEl(row);
+  return bubble;
+}
+
+// Markdown 간단 렌더 (bold, code, br)
+function renderMarkdown(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+}
+
+// ── Claude API 호출 (스트리밍) ───────────────────────────────
+async function callClaudeStreaming(userMessage, onChunk, onDone, onError) {
+  conversationHistory.push({ role: 'user', content: userMessage });
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
+        messages: conversationHistory,
+        stream: true
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `API Error ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const evt = JSON.parse(data);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+            fullText += evt.delta.text;
+            onChunk(fullText);
+          }
+        } catch {}
+      }
+    }
+
+    conversationHistory.push({ role: 'assistant', content: fullText });
+    onDone(fullText);
+
+  } catch (err) {
+    onError(err.message);
+  }
+}
+
+// JSON intent + combo 추출 (코드블록 감싸진 경우도 처리)
+function parseIntentData(text) {
+  // 코드블록 안에 있는 경우도 추출
+  const clean = text.replace(/```[a-z]*\n?/g, '').replace(/```/g, '');
+  const match = clean.match(/\{[^}]*"intent"[^}]*\}/);
+  if (match) {
+    try {
+      const obj = JSON.parse(match[0]);
+      return { intent: obj.intent || 'general', combo: obj.combo || null };
+    } catch {}
+  }
+  return { intent: 'general', combo: null };
+}
+
+// ── 클라이언트 측 밴드 패턴 감지 (Claude 오분류 보정) ──
+// 사용자 질문에서 NR 밴드(n1, n78C, n78(2A) 등)를 직접 파싱
+function detectBandsFromQuery(query) {
+  // n + 숫자 + 선택적 suffix(A-D) + 선택적 (2A)/(3A) 형태 매칭
+  const matches = query.match(/n\d{1,3}(?:\([0-9]+[A-Z]\)|[A-Z])?/gi) || [];
+  // 중복 제거 + 정규화
+  const bands = [...new Set(matches.map(b => {
+    b = b.trim();
+    // suffix 없으면 A 추가 (단, (2A) 같은 intra 표기는 제외)
+    if (/^n\d{1,3}$/i.test(b)) return b + 'A';
+    return b;
+  }))];
+  return bands;
+}
+
+// intentData를 질문 기반으로 보정
+function refineIntent(intentData, query) {
+  // BW/대역폭/계산/Max 등의 키워드 + 밴드 2개 이상 → 강제 nrca
+  const bwKeywords = /(bw|bandwidth|대역폭|max|계산|조합|확인|분석|bcs)/i;
+  const bands = detectBandsFromQuery(query);
+
+  if (bands.length >= 2 && bwKeywords.test(query)) {
+    // Claude가 combo를 안 줬으면 직접 파싱한 것 사용
+    const combo = intentData.combo || bands.join('-');
+    return { intent: 'nrca', combo: combo };
+  }
+  return intentData;
+}
+
+// JSON 블록 + 코드펜스 제거 후 표시용 텍스트
+function cleanResponse(text) {
+  let t = text;
+  // 1. 응답 맨 앞 코드펜스로 감싼 JSON 제거 (```json {...} ``` 또는 ``` {...} ```)
+  t = t.replace(/^\s*```[a-zA-Z]*\s*\{[\s\S]*?\}\s*```/, '');
+  // 2. 코드펜스 없는 맨 앞 JSON 제거
+  t = t.replace(/^\s*\{[\s\S]*?"intent"[\s\S]*?\}/, '');
+  // 3. 남아있는 빈 코드펜스 제거
+  t = t.replace(/```[a-zA-Z]*\s*```/g, '');
+  // 4. 줄 단위로 남은 단독 펜스/JSON 제거
+  t = t.split('\n').filter(line => {
+    const s = line.trim();
+    if (s === '```' || s === '```json') return false;
+    if (/^\{.*"intent".*\}$/.test(s)) return false;
+    return true;
+  }).join('\n');
+  return t.trim();
+}
+
+// ── 메인 send ─────────────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  const welcome = document.getElementById('chatWelcome');
+  if (welcome) welcome.remove();
+
+  input.value = ''; input.style.height = 'auto';
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  addUserBubble(text);
+  addTyping();
+  await sleep(400);
+
+  let intentData = { intent: 'general', combo: null };
+  let intentDetected = false;
+  let streamBubble = null;
+  let badgeAdded = false;
+
+  await callClaudeStreaming(
+    text,
+    // onChunk — 스트리밍 중 (텍스트만 표시, 배지는 onDone에서)
+    (fullText) => {
+      if (!intentDetected && fullText.includes('"intent"')) {
+        intentData = parseIntentData(fullText);
+        intentDetected = true;
+      }
+      if (!streamBubble) {
+        removeTyping();
+        streamBubble = createStreamBubble();
+      }
+      if (streamBubble) {
+        const clean = cleanResponse(fullText);
+        streamBubble.innerHTML = renderMarkdown(clean);
+        scrollBottom();
+      }
+    },
+    // onDone — 스트리밍 완료
+    async (fullText) => {
+      if (!intentDetected) {
+        intentData = parseIntentData(fullText);
+      }
+      // ★ 클라이언트 측 밴드 감지로 intent 보정
+      intentData = refineIntent(intentData, text);
+
+      // 라우팅 배지를 보정된 intent로 표시 (스트림 버블 앞에 삽입)
+      if (!badgeAdded) {
+        insertRoutingBadgeBefore(streamBubble, intentData.intent);
+        badgeAdded = true;
+      }
+
+      // 커서 제거 + 최종 텍스트
+      if (streamBubble) {
+        streamBubble.classList.remove('streaming-cursor');
+        const clean = cleanResponse(fullText);
+        streamBubble.innerHTML = renderMarkdown(clean);
+        scrollBottom();
+      }
+
+      // ── NR CA 이면 Analyzer 직접 호출 ──────────────────────
+      if (intentData.intent === 'nrca' && intentData.combo) {
+        await callNRCAAnalyzer(intentData.combo);
+      }
+
+      isLoading = false;
+      document.getElementById('sendBtn').disabled = false;
+    },
+    // onError
+    (errMsg) => {
+      removeTyping();
+      if (streamBubble) streamBubble.classList.remove('streaming-cursor');
+      const errEl = document.createElement('div');
+      errEl.className = 'error-msg';
+      errEl.textContent = `⚠️ 오류: ${errMsg}`;
+      appendEl(errEl);
+      isLoading = false;
+      document.getElementById('sendBtn').disabled = false;
+    }
+  );
+}
+
+// ── NR CA Analyzer 호출 및 결과 표시 ─────────────────────────
+async function callNRCAAnalyzer(combo) {
+  // 로딩 인디케이터
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'routing-badge nrca';
+  loadingEl.id = 'nrcaLoading';
+  loadingEl.innerHTML = `<span>⚙️</span><span>SA NR CA BW Analysis Agent 계산 중 — <b>${escHtml(combo)}</b></span>`;
+  appendEl(loadingEl);
+
+  try {
+    const data = await requestNRCAAnalysis(combo);
+    document.getElementById('nrcaLoading')?.remove();
+
+    if (!data.results || data.results.length === 0) {
+      const errEl = document.createElement('div');
+      errEl.className = 'error-msg';
+      errEl.textContent = `⚠️ "${combo}" 조합의 결과가 없습니다. 조합 형식을 확인해 주세요.`;
+      appendEl(errEl);
+      return;
+    }
+
+    // 결과 카드 표시
+    const cardEl = document.createElement('div');
+    cardEl.innerHTML = buildNRCACard(data);
+    appendEl(cardEl.firstElementChild);
+    scrollBottom();
+
+  } catch (err) {
+    document.getElementById('nrcaLoading')?.remove();
+    const errEl = document.createElement('div');
+    errEl.className = 'error-msg';
+    errEl.innerHTML = `⚠️ Analyzer 호출 오류: ${escHtml(err.message)}<br>
+      <small>직접 사용하려면 우측 앱카드의 <b>SA NR CA BW Analysis</b>를 클릭하세요.</small>`;
+    appendEl(errEl);
+  }
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById('modal-' + id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById('modal-' + id).classList.remove('open');
+}
+function closeOutside(e, id) {
+  if (e.target === document.getElementById('modal-' + id)) closeModal(id);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') ['feature','combo','nrca'].forEach(closeModal);
+});
+</script>
+</body>
+</html>
