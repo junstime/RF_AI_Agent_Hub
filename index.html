@@ -121,12 +121,22 @@
   .chat-subheader-text { font-size: 12.5px; color: var(--text-muted); }
   .chat-subheader-text strong { color: var(--brand-dark); font-weight: 600; }
 
+  /* [수정] 스크롤바가 정상 노출되고 글자와 겹치지 않도록 레이아웃 속성 보정 */
   .chat-messages {
-    flex: 1; overflow-y: auto; padding: 24px;
-    display: flex; flex-direction: column; gap: 16px;
+    flex: 1; 
+    overflow-y: scroll; /* 항상 스크롤바 공간을 유지하여 UI 들뜸 및 밀림 방지 */
+    padding: 24px 20px 24px 24px; /* 우측 스크롤 바 간격 확보를 위한 패팅 세분화 */
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px;
+    position: relative;
   }
-  .chat-messages::-webkit-scrollbar { width: 6px; }
-  .chat-messages::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+  
+  /* 메인 채팅창 스크롤바 디자인 세련되게 변경 */
+  .chat-messages::-webkit-scrollbar { width: 8px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
 
   /* welcome */
   .chat-welcome {
@@ -257,12 +267,19 @@
     border-bottom: 1px solid #E2E8F0;
     background: #F8FAFC; color: var(--brand-dark);
   }
+  
+  /* [수정] 결과 카드 내부 우측 패딩을 추가하여 스크롤 트랙 가시성 전면 확보 */
   .result-rows {
-    padding: 6px 0; max-height: 300px; overflow-y: auto;
+    padding: 6px 8px 6px 0; 
+    max-height: 280px; 
+    overflow-y: auto;
     background: white;
   }
+  /* 결과 카드 내 독립 스크롤바 디자인 정의 */
   .result-rows::-webkit-scrollbar { width: 6px; }
-  .result-rows::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 3px; }
+  .result-rows::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+  .result-rows::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+  .result-rows::-webkit-scrollbar-track { background: transparent; }
   
   .result-row {
     display: flex; align-items: center; justify-content: space-between;
@@ -369,7 +386,7 @@
   }
   .app-card-btn.green    { background: var(--brand-dark); color: white; }
   .app-card-btn.green:hover { background: var(--brand-primary); }
-  .app-card-btn.disabled { background: #F1F5F9; color: var(--text-light); cursor: not-allowed; }
+  .app-card-btn.disabled { background: #F1F5F9; color: var(--text-light); cursor: not-allowed; transform: none; box-shadow: none; }
 
   /* ── Modal ── */
   .modal-overlay {
@@ -1380,6 +1397,7 @@ async function callNRCAAnalyzer(combo) {
   }
 }
 
+// ── Modal ──
 function openModal(id) {
   document.getElementById('modal-' + id).classList.add('open');
 }
